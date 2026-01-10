@@ -7,23 +7,33 @@ public class EvaluationPoint {
     private Long id;
     private Long companyId;
     private String name;
+    private String description;
     private BigDecimal scoreRangeFrom;
     private BigDecimal scoreRangeTo;
+    private BigDecimal weight;
+    private String status;
     private Long createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     // Constructors
-    public EvaluationPoint() {}
+    public EvaluationPoint() {
+        this.weight = BigDecimal.ONE;
+        this.status = "YES";
+    }
 
-    public EvaluationPoint(Long id, Long companyId, String name,
-                           BigDecimal scoreRangeFrom, BigDecimal scoreRangeTo, Long createdBy) {
+    public EvaluationPoint(Long id, Long companyId, String name, String description,
+                           BigDecimal scoreRangeFrom, BigDecimal scoreRangeTo,
+                           BigDecimal weight, Long createdBy) {
         this.id = id;
         this.companyId = companyId;
         this.name = name;
+        this.description = description;
         this.scoreRangeFrom = scoreRangeFrom;
         this.scoreRangeTo = scoreRangeTo;
+        this.weight = weight != null ? weight : BigDecimal.ONE;
         this.createdBy = createdBy;
+        this.status = "YES";
     }
 
     // Getters and Setters
@@ -51,6 +61,14 @@ public class EvaluationPoint {
         this.name = name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public BigDecimal getScoreRangeFrom() {
         return scoreRangeFrom;
     }
@@ -65,6 +83,22 @@ public class EvaluationPoint {
 
     public void setScoreRangeTo(BigDecimal scoreRangeTo) {
         this.scoreRangeTo = scoreRangeTo;
+    }
+
+    public BigDecimal getWeight() {
+        return weight;
+    }
+
+    public void setWeight(BigDecimal weight) {
+        this.weight = weight;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Long getCreatedBy() {
@@ -93,6 +127,7 @@ public class EvaluationPoint {
 
     @Override
     public String toString() {
-        return name + " (" + scoreRangeFrom + "-" + scoreRangeTo + ")";
+        return name + " (" + scoreRangeFrom + "-" + scoreRangeTo + ")" +
+                (weight != null && weight.compareTo(BigDecimal.ONE) != 0 ? " [weight: " + weight + "]" : "");
     }
 }

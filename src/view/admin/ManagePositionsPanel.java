@@ -6,39 +6,217 @@ import service.PositionService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import model.Position;
+import model.User;
+import service.PositionService;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
+
 public class ManagePositionsPanel extends JPanel {
 
     private User currentUser;
-    private PositionService departmentService;
+    private PositionService positionService;
     private JTable table;
     private DefaultTableModel tableModel;
 
     public ManagePositionsPanel(User user) {
         this.currentUser = user;
-        this.departmentService = new PositionService();
+        this.positionService = new PositionService();
         initComponents();
         loadData();
     }
 
     private void initComponents() {
-        // Same pattern as ManageCompaniesPanel
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Title
+        JLabel titleLabel = new JLabel("Manage Positions");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        add(titleLabel, BorderLayout.NORTH);
+
+        // Table
+        String[] columns = {"ID", "Code", "Name", "Company ID", "Created At"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        table = new JTable(tableModel);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane scrollPane = new JScrollPane(table);
+        add(scrollPane, BorderLayout.CENTER);
+
+        // Button Panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton addButton = new JButton("Add Position");
+        JButton editButton = new JButton("Edit");
+        JButton deleteButton = new JButton("Delete");
+        JButton refreshButton = new JButton("Refresh");
+
+        addButton.addActionListener(e -> addPosition());
+        editButton.addActionListener(e -> editPosition());
+        deleteButton.addActionListener(e -> deletePosition());
+        refreshButton.addActionListener(e -> loadData());
+
+        buttonPanel.add(addButton);
+        buttonPanel.add(editButton);
+        buttonPanel.add(deleteButton);
+        buttonPanel.add(refreshButton);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
 
     private void loadData() {
-        // Call service.getAll[Entities]()
-        departmentService.getAllPositions();
+        tableModel.setRowCount(0);
+        List<Position> positions = positionService.getAllPositions();
+
+        for (Position position : positions) {
+            if (position.getCompanyId().equals(currentUser.getCompanyId())) {
+                tableModel.addRow(new Object[]{
+                        position.getId(),
+                        position.getName(),
+                        position.getCompanyId(),
+                        position.getCreatedAt()
+                });
+            }
+        }
     }
 
     private void addPosition() {
-        // Show dialog, collect data, call service.add[Entity]()
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add Position", true);
+        dialog.setLayout(new GridLayout(4, 2, 10, 10));
+        dialog.setSize(400, 200);
+
+        JTextField codeField = new JTextField();
+        JTextField nameField = new JTextField();
+
+        dialog.add(new JLabel("Code:"));
+        dialog.add(codeField);
+        dialog.add(new JLabel("Name:"));
+        dialog.add(nameField);
+
+        JButton saveButton = new JButton("Save");
+        JButton cancelButton = new JButton("Cancel");
+
+        saveButton.addActionListener(e -> {
+            String code = codeField.getText().trim();
+            String name = nameField.getText().trim();
+
+            if (code.isEmpty() || name.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "All fields are required");
+                return;
+            }
+
+            Position position = new Position();
+            position.setName(name);
+            position.setCompanyId(currentUser.getCompanyId());
+            position.setCreatedBy(currentUser.getId());
+
+            boolean success = positionService.addPosition(position);
+            if (success) {
+                JOptionPane.showMessageDialog(dialog, "Position added successfully");
+                dialog.dispose();
+                loadData();
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Failed to add position");
+            }
+        });
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        dialog.add(saveButton);
+        dialog.add(cancelButton);
+
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private void editPosition() {
-        // Show dialog with pre-filled data, call service.update[Entity]()
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a position to edit");
+            return;
+        }
+
+        Long id = (Long) tableModel.getValueAt(selectedRow, 0);
+        String currentCode = (String) tableModel.getValueAt(selectedRow, 1);
+        String currentName = (String) tableModel.getValueAt(selectedRow, 2);
+
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Edit Position", true);
+        dialog.setLayout(new GridLayout(4, 2, 10, 10));
+        dialog.setSize(400, 200);
+
+        JTextField codeField = new JTextField(currentCode);
+        JTextField nameField = new JTextField(currentName);
+
+        dialog.add(new JLabel("Code:"));
+        dialog.add(codeField);
+        dialog.add(new JLabel("Name:"));
+        dialog.add(nameField);
+
+        JButton saveButton = new JButton("Save");
+        JButton cancelButton = new JButton("Cancel");
+
+        saveButton.addActionListener(e -> {
+            String code = codeField.getText().trim();
+            String name = nameField.getText().trim();
+
+            if (code.isEmpty() || name.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "All fields are required");
+                return;
+            }
+
+            Position position = new Position();
+            position.setId(id);
+            position.setName(name);
+            position.setCompanyId(currentUser.getCompanyId());
+
+            boolean success = positionService.updatePosition(position);
+            if (success) {
+                JOptionPane.showMessageDialog(dialog, "Position updated successfully");
+                dialog.dispose();
+                loadData();
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Failed to update position");
+            }
+        });
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        dialog.add(saveButton);
+        dialog.add(cancelButton);
+
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private void deletePosition() {
-        // Confirm and call service.delete[Entity]()
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a position to delete");
+            return;
+        }
+
+        Long id = (Long) tableModel.getValueAt(selectedRow, 0);
+        String name = (String) tableModel.getValueAt(selectedRow, 2);
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete position: " + name + "?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean success = positionService.deletePosition(id);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Position deleted successfully");
+                loadData();
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to delete position");
+            }
+        }
     }
-    
 }

@@ -1,67 +1,138 @@
 package service;
 
+import db.DbConnection;
 import model.Department;
 
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DepartmentService {
 
-    /**
-     * Retrieves all departments
-     * @return List of all departments
-     */
     public List<Department> getAllDepartments() {
-        // TODO: Implement JDBC logic
-        return null;
+        List<Department> list = new ArrayList<>();
+        String sql = "SELECT * FROM departments";
+
+        try (Connection con = DbConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(map(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
-    /**
-     * Retrieves a department by ID
-     * @param id Department ID
-     * @return Department object or null
-     */
     public Department getDepartmentById(Long id) {
-        // TODO: Implement JDBC logic
+        String sql = "SELECT * FROM departments WHERE id = ?";
+
+        try (Connection con = DbConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
-    /**
-     * Retrieves departments by company ID
-     * @param companyId Company ID
-     * @return List of departments
-     */
     public List<Department> getDepartmentsByCompanyId(Long companyId) {
-        // TODO: Implement JDBC logic
-        return null;
+        List<Department> list = new ArrayList<>();
+        String sql = "SELECT * FROM departments WHERE company_id = ?";
+
+        try (Connection con = DbConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setLong(1, companyId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(map(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
-    /**
-     * Adds a new department
-     * @param department Department object
-     * @return true if successful
-     */
-    public boolean addDepartment(Department department) {
-        // TODO: Implement JDBC logic
+    public boolean addDepartment(Department d) {
+        String sql = """
+            INSERT INTO departments (company_id, name, created_by, created_at)
+            VALUES (?, ?, ?, ?)
+        """;
+
+        try (Connection con = DbConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setLong(1, d.getCompanyId());
+            ps.setString(2, d.getName());
+            ps.setLong(3, d.getCreatedBy());
+            ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
-    /**
-     * Updates a department
-     * @param department Department object
-     * @return true if successful
-     */
-    public boolean updateDepartment(Department department) {
-        // TODO: Implement JDBC logic
+    public boolean updateDepartment(Department d) {
+        String sql = """
+            UPDATE departments
+            SET name = ?, updated_at = ?
+            WHERE id = ?
+        """;
+
+        try (Connection con = DbConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, d.getName());
+            ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setLong(3, d.getId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
-    /**
-     * Deletes a department
-     * @param id Department ID
-     * @return true if successful
-     */
     public boolean deleteDepartment(Long id) {
-        // TODO: Implement JDBC logic
+        String sql = "DELETE FROM departments WHERE id = ?";
+
+        try (Connection con = DbConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
+    }
+
+    private Department map(ResultSet rs) throws SQLException {
+        Department d = new Department();
+        d.setId(rs.getLong("id"));
+        d.setCompanyId(rs.getLong("company_id"));
+        d.setName(rs.getString("name"));
+        d.setCreatedBy(rs.getLong("created_by"));
+        d.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+
+        Timestamp ua = rs.getTimestamp("updated_at");
+        if (ua != null) d.setUpdatedAt(ua.toLocalDateTime());
+
+        return d;
     }
 }

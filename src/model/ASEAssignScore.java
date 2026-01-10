@@ -5,12 +5,15 @@ import java.time.LocalDateTime;
 
 /**
  * Model class representing the ase_assign_scores table
+ * Now with evaluation_point_id to link scores to specific criteria
  */
 public class ASEAssignScore {
     private Long id;
     private Long assignStaffEvaluationListId;
+    private Long evaluationPointId;
     private Long companyId;
     private BigDecimal score;
+    private String comment;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -18,11 +21,14 @@ public class ASEAssignScore {
     public ASEAssignScore() {}
 
     public ASEAssignScore(Long id, Long assignStaffEvaluationListId,
-                          Long companyId, BigDecimal score) {
+                          Long evaluationPointId, Long companyId,
+                          BigDecimal score, String comment) {
         this.id = id;
         this.assignStaffEvaluationListId = assignStaffEvaluationListId;
+        this.evaluationPointId = evaluationPointId;
         this.companyId = companyId;
         this.score = score;
+        this.comment = comment;
     }
 
     // Getters and Setters
@@ -42,6 +48,14 @@ public class ASEAssignScore {
         this.assignStaffEvaluationListId = assignStaffEvaluationListId;
     }
 
+    public Long getEvaluationPointId() {
+        return evaluationPointId;
+    }
+
+    public void setEvaluationPointId(Long evaluationPointId) {
+        this.evaluationPointId = evaluationPointId;
+    }
+
     public Long getCompanyId() {
         return companyId;
     }
@@ -56,6 +70,14 @@ public class ASEAssignScore {
 
     public void setScore(BigDecimal score) {
         this.score = score;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -76,6 +98,6 @@ public class ASEAssignScore {
 
     @Override
     public String toString() {
-        return "Score: " + score;
+        return "Score: " + score + (comment != null && !comment.isEmpty() ? " (" + comment + ")" : "");
     }
 }

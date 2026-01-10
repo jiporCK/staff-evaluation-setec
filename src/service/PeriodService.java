@@ -1,78 +1,144 @@
 package service;
 
-import java.util.List;
-import model.*;
+import db.DbConnection;
+import model.Period;
 
-/**
- * Service class for Period-related database operations
- */
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 public class PeriodService {
 
-    /**
-     * Retrieves all periods
-     * @return List of all periods
-     */
     public List<Period> getAllPeriods() {
-        // TODO: Implement JDBC logic
-        return null;
+        List<Period> list = new ArrayList<>();
+        String sql = "SELECT * FROM periods";
+
+        try (Connection c = DbConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) list.add(map(rs));
+
+        } catch (SQLException e) {}
+        return list;
     }
 
-    /**
-     * Retrieves a period by ID
-     * @param id Period ID
-     * @return Period object or null
-     */
     public Period getPeriodById(Long id) {
-        // TODO: Implement JDBC logic
+        String sql = "SELECT * FROM periods WHERE id=?";
+        try (Connection c = DbConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return map(rs);
+
+        } catch (SQLException e) {}
         return null;
     }
 
-    /**
-     * Retrieves periods by company ID
-     * @param companyId Company ID
-     * @return List of periods
-     */
     public List<Period> getPeriodsByCompanyId(Long companyId) {
-        // TODO: Implement JDBC logic
-        return null;
+        List<Period> list = new ArrayList<>();
+        String sql = "SELECT * FROM periods WHERE company_id=?";
+
+        try (Connection c = DbConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setLong(1, companyId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) list.add(map(rs));
+
+        } catch (SQLException e) {}
+        return list;
     }
 
-    /**
-     * Retrieves active periods
-     * @return List of active periods (status = 'YES')
-     */
     public List<Period> getActivePeriods() {
-        // TODO: Implement JDBC logic
-        return null;
+        List<Period> list = new ArrayList<>();
+        String sql = "SELECT * FROM periods WHERE status='YES'";
+
+        try (Connection c = DbConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) list.add(map(rs));
+
+        } catch (SQLException e) {}
+        return list;
     }
 
-    /**
-     * Adds a new period
-     * @param period Period object
-     * @return true if successful
-     */
-    public boolean addPeriod(Period period) {
-        // TODO: Implement JDBC logic
-        return false;
+    public boolean addPeriod(Period p) {
+        String sql = """
+            INSERT INTO periods
+            (company_id, code, from_date, to_date, created_by, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """;
+
+        try (Connection c = DbConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setLong(1, p.getCompanyId());
+            ps.setString(2, p.getCode());
+            ps.setTimestamp(3, Timestamp.valueOf(p.getFromDate()));
+            ps.setTimestamp(4, Timestamp.valueOf(p.getToDate()));
+            ps.setLong(5, p.getCreatedBy());
+            ps.setString(6, p.getStatus());
+            ps.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
-    /**
-     * Updates a period
-     * @param period Period object
-     * @return true if successful
-     */
-    public boolean updatePeriod(Period period) {
-        // TODO: Implement JDBC logic
-        return false;
+    public boolean updatePeriod(Period p) {
+        String sql = """
+            UPDATE periods SET
+            company_id=?, code=?, from_date=?, to_date=?, status=?, updated_at=?
+            WHERE id=?
+        """;
+
+        try (Connection c = DbConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setLong(1, p.getCompanyId());
+            ps.setString(2, p.getCode());
+            ps.setTimestamp(3, Timestamp.valueOf(p.getFromDate()));
+            ps.setTimestamp(4, Timestamp.valueOf(p.getToDate()));
+            ps.setString(5, p.getStatus());
+            ps.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setLong(7, p.getId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
-    /**
-     * Deletes a period
-     * @param id Period ID
-     * @return true if successful
-     */
     public boolean deletePeriod(Long id) {
-        // TODO: Implement JDBC logic
-        return false;
+        try (Connection c = DbConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement("DELETE FROM periods WHERE id=?")) {
+
+            ps.setLong(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    private Period map(ResultSet rs) throws SQLException {
+        Period p = new Period();
+        p.setId(rs.getLong("id"));
+        p.setCompanyId(rs.getLong("company_id"));
+        p.setCode(rs.getString("code"));
+        p.setFromDate(rs.getTimestamp("from_date").toLocalDateTime());
+        p.setToDate(rs.getTimestamp("to_date").toLocalDateTime());
+        p.setCreatedBy(rs.getLong("created_by"));
+        p.setStatus(rs.getString("status"));
+        p.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+        p.setUpdatedAt(rs.getTimestamp("updated_at") != null
+                ? rs.getTimestamp("updated_at").toLocalDateTime()
+                : null);
+        return p;
     }
 }
+

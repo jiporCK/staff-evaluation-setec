@@ -14,7 +14,7 @@ public class Main {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.printf("Error: %s\n", e.getMessage());
         }
 
         // Launch application on Event Dispatch Thread

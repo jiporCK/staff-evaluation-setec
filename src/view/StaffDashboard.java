@@ -64,7 +64,8 @@ public class StaffDashboard extends JFrame {
         // Menu buttons
         addMenuButton(menuPanel, "Dashboard", e -> showWelcomePanel());
         addMenuButton(menuPanel, "My Profile", e -> showProfilePanel());
-        addMenuButton(menuPanel, "My Evaluations", e -> showMyEvaluationsPanel());
+//        addMenuButton(menuPanel, "Pending Evaluations", e -> showPendingEvaluationsPanel());
+        addMenuButton(menuPanel, "My Results", e -> showMyResultsPanel());
         addMenuButton(menuPanel, "Submit Scores", e -> showSubmitScoresPanel());
 
         // Add glue to push buttons to top
@@ -98,6 +99,23 @@ public class StaffDashboard extends JFrame {
     private void showProfilePanel() {
         contentPanel.removeAll();
         contentPanel.add(new ViewProfilePanel(currentUser), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+//    private void showPendingEvaluationsPanel() {
+//        contentPanel.removeAll();
+//        // Assuming currentUser has getStaffId() method, otherwise use getId()
+//        Long staffId = currentUser.getId(); // Or currentUser.getStaffId() if available
+//        contentPanel.add(new MyPendingEvaluationsPanel(staffId, currentUser.getCompanyId()), BorderLayout.CENTER);
+//        contentPanel.revalidate();
+//        contentPanel.repaint();
+//    }
+
+    private void showMyResultsPanel() {
+        contentPanel.removeAll();
+        Long staffId = currentUser.getId(); // Or currentUser.getStaffId() if available
+        contentPanel.add(new MyEvaluationResultsPanel(staffId, currentUser.getCompanyId()), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }

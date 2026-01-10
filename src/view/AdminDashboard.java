@@ -1,11 +1,10 @@
 package view;
 
-import view.admin.ManageCompaniesPanel;
+import view.admin.*;
 
 import javax.swing.*;
 import java.awt.*;
 import model.*;
-import view.admin.*;
 
 /**
  * Main dashboard window for Admin users
@@ -71,11 +70,12 @@ public class AdminDashboard extends JFrame {
         addMenuButton(menuPanel, "Manage Positions", e -> showPositionsPanel());
         addMenuButton(menuPanel, "Manage Periods", e -> showPeriodsPanel());
         addMenuButton(menuPanel, "Manage Staff", e -> showStaffPanel());
+        addMenuButton(menuPanel, "Evaluation Points", e -> showEvaluationPointsPanel());
+        addMenuButton(menuPanel, "Assign Evaluations", e -> showAssignEvaluationsPanel());
         addMenuButton(menuPanel, "View Evaluations", e -> showEvaluationsPanel());
+        addMenuButton(menuPanel, "Manage Reports", e -> showReportsPanel());  // <-- ADD THIS LINE
 
-        // Add glue to push buttons to top
         menuPanel.add(Box.createVerticalGlue());
-
         return menuPanel;
     }
 
@@ -146,6 +146,27 @@ public class AdminDashboard extends JFrame {
     private void showStaffPanel() {
         contentPanel.removeAll();
         contentPanel.add(new ManageStaffPanel(currentUser), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showReportsPanel() {
+        contentPanel.removeAll();
+        contentPanel.add(new ManageReportsPanel(currentUser.getCompanyId()), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showEvaluationPointsPanel() {
+        contentPanel.removeAll();
+        contentPanel.add(new ManageEvaluationPointsPanel(currentUser.getCompanyId(), currentUser.getId()), BorderLayout.CENTER);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showAssignEvaluationsPanel() {
+        contentPanel.removeAll();
+        contentPanel.add(new AssignEvaluationsPanel(currentUser.getCompanyId(), currentUser.getId()), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
