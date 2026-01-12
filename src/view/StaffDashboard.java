@@ -5,6 +5,8 @@ import view.staff.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * Main dashboard window for Staff users
@@ -14,11 +16,20 @@ public class StaffDashboard extends JFrame {
     private User currentUser;
     private JPanel contentPanel;
     private JPanel sideMenuPanel;
+    private final Color menuBg = new Color(246, 247, 250);
+    private final Color menuCardBg = Color.WHITE;
+    private final Color menuBorder = new Color(220, 224, 230);
+    private final Color menuText = new Color(33, 37, 41);
+    private final Color menuSubtle = new Color(110, 116, 122);
+    private final Color hoverBg = new Color(229, 233, 238);
+    private final Font menuFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font menuSectionFont = new Font("Segoe UI", Font.BOLD, 13);
 
     public StaffDashboard(User user) {
         this.currentUser = user;
         initComponents();
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     private void initComponents() {
@@ -57,9 +68,16 @@ public class StaffDashboard extends JFrame {
     private JPanel createSideMenu() {
         JPanel menuPanel = new JPanel();
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
-        menuPanel.setBackground(new Color(52, 152, 219));
-        menuPanel.setPreferredSize(new Dimension(200, getHeight()));
-        menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        menuPanel.setBackground(menuBg);
+        menuPanel.setPreferredSize(new Dimension(240, getHeight()));
+        menuPanel.setBorder(BorderFactory.createEmptyBorder(16, 14, 16, 14));
+
+        JLabel menuLabel = new JLabel("NAVIGATION");
+        menuLabel.setFont(menuSectionFont);
+        menuLabel.setForeground(menuSubtle);
+        menuLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        menuPanel.add(menuLabel);
+        menuPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         // Menu buttons
         addMenuButton(menuPanel, "Dashboard", e -> showWelcomePanel());
@@ -77,12 +95,31 @@ public class StaffDashboard extends JFrame {
     private void addMenuButton(JPanel panel, String text, java.awt.event.ActionListener action) {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        button.setMaximumSize(new Dimension(180, 40));
-        button.setBackground(new Color(41, 128, 185));
-        button.setForeground(Color.WHITE);
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        button.setPreferredSize(new Dimension(200, 40));
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setBackground(menuCardBg);
+        button.setForeground(menuText);
         button.setFocusPainted(false);
         button.setBorderPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(menuBorder, 1, true),
+                BorderFactory.createEmptyBorder(8, 14, 8, 14)
+        ));
+        button.setFont(menuFont);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         button.addActionListener(action);
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(hoverBg);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(menuCardBg);
+            }
+        });
         panel.add(button);
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
     }

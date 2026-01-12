@@ -22,6 +22,18 @@ public class EvaluationDetailPanel extends JPanel {
     private Long companyId;
     private JTable scoresTable;
     private DefaultTableModel tableModel;
+    private final Color panelBg = new Color(246, 247, 250);
+    private final Color cardBg = Color.WHITE;
+    private final Color borderColor = new Color(220, 224, 230);
+    private final Color headerBg = new Color(233, 236, 241);
+    private final Color headerText = new Color(33, 37, 41);
+    private final Color rowAlt = new Color(248, 249, 252);
+    private final Color rowText = new Color(40, 45, 50);
+    private final Color selectionBg = new Color(214, 220, 230);
+    private final Color selectionText = new Color(20, 24, 28);
+    private final Font sectionTitleFont = new Font("Segoe UI", Font.BOLD, 13);
+    private final Font tableFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font headerFont = new Font("Segoe UI", Font.BOLD, 13);
 
     public EvaluationDetailPanel(Long evaluationId, Long companyId) {
         this.evaluationService = new EvaluationService();
@@ -30,8 +42,8 @@ public class EvaluationDetailPanel extends JPanel {
         this.evaluationId = evaluationId;
         this.companyId = companyId;
 
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(12, 12));
+        setBackground(panelBg);
 
         // Get evaluation details
         AssignStaffEvaluation evaluation = getEvaluationById(evaluationId);
@@ -47,7 +59,15 @@ public class EvaluationDetailPanel extends JPanel {
 
         // Scores Table - Now shows breakdown by criterion
         JPanel scoresPanel = new JPanel(new BorderLayout());
-        scoresPanel.setBorder(BorderFactory.createTitledBorder("Evaluator Scores by Criterion"));
+        scoresPanel.setBackground(cardBg);
+        scoresPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+        JLabel scoresLabel = new JLabel("Evaluator Scores by Criterion");
+        scoresLabel.setFont(sectionTitleFont);
+        scoresLabel.setForeground(new Color(67, 73, 79));
+        scoresPanel.add(scoresLabel, BorderLayout.NORTH);
 
         String[] columns = {"Evaluator", "Criterion", "Score", "Comment", "Submitted At"};
         tableModel = new DefaultTableModel(columns, 0) {
@@ -57,8 +77,36 @@ public class EvaluationDetailPanel extends JPanel {
             }
         };
         scoresTable = new JTable(tableModel);
-        scoresTable.setRowHeight(25);
+        scoresTable.setFont(tableFont);
+        scoresTable.setForeground(rowText);
+        scoresTable.setRowHeight(28);
+        scoresTable.setShowHorizontalLines(true);
+        scoresTable.setShowVerticalLines(false);
+        scoresTable.setGridColor(new Color(230, 233, 238));
+        scoresTable.setSelectionBackground(selectionBg);
+        scoresTable.setSelectionForeground(selectionText);
+        scoresTable.setIntercellSpacing(new Dimension(0, 6));
+        scoresTable.getTableHeader().setReorderingAllowed(false);
+        scoresTable.getTableHeader().setFont(headerFont);
+        scoresTable.getTableHeader().setBackground(headerBg);
+        scoresTable.getTableHeader().setForeground(headerText);
+        scoresTable.getTableHeader().setPreferredSize(new Dimension(0, 34));
+        scoresTable.setFillsViewportHeight(true);
+        scoresTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        scoresTable.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                           boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? cardBg : rowAlt);
+                }
+                return c;
+            }
+        });
         JScrollPane scrollPane = new JScrollPane(scoresTable);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(cardBg);
         scoresPanel.add(scrollPane, BorderLayout.CENTER);
 
         add(scoresPanel, BorderLayout.CENTER);
@@ -71,8 +119,20 @@ public class EvaluationDetailPanel extends JPanel {
     }
 
     private JPanel createHeaderPanel(AssignStaffEvaluation evaluation) {
-        JPanel panel = new JPanel(new GridLayout(7, 2, 10, 5));
-        panel.setBorder(BorderFactory.createTitledBorder("Evaluation Information"));
+        JPanel contentPanel = new JPanel(new GridLayout(7, 2, 10, 5));
+        contentPanel.setOpaque(false);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(cardBg);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+        JLabel sectionLabel = new JLabel("Evaluation Information");
+        sectionLabel.setFont(sectionTitleFont);
+        sectionLabel.setForeground(new Color(67, 73, 79));
+        panel.add(sectionLabel, BorderLayout.NORTH);
+        panel.add(contentPanel, BorderLayout.CENTER);
 
         Period period = periodService.getPeriodById(evaluation.getPeriodId());
         String periodInfo = period != null ?
@@ -85,31 +145,31 @@ public class EvaluationDetailPanel extends JPanel {
         List<EvaluationPoint> assignedPoints =
                 evaluationService.getAssignedEvaluationPoints(evaluationId);
 
-        panel.add(new JLabel("Evaluation ID:"));
-        panel.add(new JLabel(evaluation.getId().toString()));
+        contentPanel.add(new JLabel("Evaluation ID:"));
+        contentPanel.add(new JLabel(evaluation.getId().toString()));
 
-        panel.add(new JLabel("Period:"));
-        panel.add(new JLabel(periodInfo));
+        contentPanel.add(new JLabel("Period:"));
+        contentPanel.add(new JLabel(periodInfo));
 
-        panel.add(new JLabel("Staff Being Evaluated:"));
-        panel.add(new JLabel(staffName));
+        contentPanel.add(new JLabel("Staff Being Evaluated:"));
+        contentPanel.add(new JLabel(staffName));
 
-        panel.add(new JLabel("Assigned By:"));
-        panel.add(new JLabel(assignedByName));
+        contentPanel.add(new JLabel("Assigned By:"));
+        contentPanel.add(new JLabel(assignedByName));
 
-        panel.add(new JLabel("Assign Date:"));
-        panel.add(new JLabel(evaluation.getAssignDate().toString()));
+        contentPanel.add(new JLabel("Assign Date:"));
+        contentPanel.add(new JLabel(evaluation.getAssignDate().toString()));
 
-        panel.add(new JLabel("Evaluation Criteria:"));
-        panel.add(new JLabel(assignedPoints.size() + " criteria"));
+        contentPanel.add(new JLabel("Evaluation Criteria:"));
+        contentPanel.add(new JLabel(assignedPoints.size() + " criteria"));
 
-        panel.add(new JLabel("Description:"));
+        contentPanel.add(new JLabel("Description:"));
         JTextArea descArea = new JTextArea(evaluation.getDescription());
         descArea.setEditable(false);
         descArea.setLineWrap(true);
         descArea.setWrapStyleWord(true);
-        descArea.setBackground(panel.getBackground());
-        panel.add(new JScrollPane(descArea));
+        descArea.setBackground(cardBg);
+        contentPanel.add(new JScrollPane(descArea));
 
         return panel;
     }
@@ -162,8 +222,20 @@ public class EvaluationDetailPanel extends JPanel {
     }
 
     private JPanel createSummaryPanel(AssignStaffEvaluation evaluation) {
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
-        panel.setBorder(BorderFactory.createTitledBorder("Summary"));
+        JPanel contentPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        contentPanel.setOpaque(false);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(cardBg);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+        JLabel sectionLabel = new JLabel("Summary");
+        sectionLabel.setFont(sectionTitleFont);
+        sectionLabel.setForeground(new Color(67, 73, 79));
+        panel.add(sectionLabel, BorderLayout.NORTH);
+        panel.add(contentPanel, BorderLayout.CENTER);
 
         // Get all evaluators and criteria
         List<AssignStaffEvaluationList> evaluators =
@@ -195,22 +267,22 @@ public class EvaluationDetailPanel extends JPanel {
         double completionRate = totalPossibleScores > 0 ?
                 (submittedScores * 100.0 / totalPossibleScores) : 0;
 
-        panel.add(new JLabel("Total Evaluators:"));
-        panel.add(new JLabel(String.valueOf(totalEvaluators)));
+        contentPanel.add(new JLabel("Total Evaluators:"));
+        contentPanel.add(new JLabel(String.valueOf(totalEvaluators)));
 
-        panel.add(new JLabel("Evaluation Criteria:"));
-        panel.add(new JLabel(String.valueOf(totalCriteria)));
+        contentPanel.add(new JLabel("Evaluation Criteria:"));
+        contentPanel.add(new JLabel(String.valueOf(totalCriteria)));
 
-        panel.add(new JLabel("Total Possible Scores:"));
-        panel.add(new JLabel(String.valueOf(totalPossibleScores)));
+        contentPanel.add(new JLabel("Total Possible Scores:"));
+        contentPanel.add(new JLabel(String.valueOf(totalPossibleScores)));
 
-        panel.add(new JLabel("Scores Submitted:"));
-        panel.add(new JLabel(submittedScores + " / " + totalPossibleScores +
+        contentPanel.add(new JLabel("Scores Submitted:"));
+        contentPanel.add(new JLabel(submittedScores + " / " + totalPossibleScores +
                 String.format(" (%.1f%%)", completionRate)));
 
-        panel.add(new JLabel("Average Score:"));
+        contentPanel.add(new JLabel("Average Score:"));
         JLabel avgLabel = new JLabel(String.format("%.2f", averageScore));
-        avgLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        avgLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         // Color code the average (assuming 1-5 scale, adjust if needed)
         if (averageScore.compareTo(BigDecimal.valueOf(4.0)) >= 0) {
@@ -221,7 +293,7 @@ public class EvaluationDetailPanel extends JPanel {
             avgLabel.setForeground(Color.RED);
         }
 
-        panel.add(avgLabel);
+        contentPanel.add(avgLabel);
 
         return panel;
     }

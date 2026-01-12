@@ -22,6 +22,19 @@ public class ViewMyEvaluationsPanel extends JPanel {
 
     private JTable evaluationsTable;
     private DefaultTableModel tableModel;
+    private final Color panelBg = new Color(246, 247, 250);
+    private final Color cardBg = Color.WHITE;
+    private final Color borderColor = new Color(220, 224, 230);
+    private final Color headerBg = new Color(233, 236, 241);
+    private final Color headerText = new Color(33, 37, 41);
+    private final Color rowAlt = new Color(248, 249, 252);
+    private final Color rowText = new Color(40, 45, 50);
+    private final Color selectionBg = new Color(214, 220, 230);
+    private final Color selectionText = new Color(20, 24, 28);
+    private final Font titleFont = new Font("Segoe UI", Font.BOLD, 20);
+    private final Font subtitleFont = new Font("Segoe UI", Font.PLAIN, 12);
+    private final Font tableFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font headerFont = new Font("Segoe UI", Font.BOLD, 13);
 
     public ViewMyEvaluationsPanel(User user) {
         this.currentUser = user;
@@ -34,15 +47,19 @@ public class ViewMyEvaluationsPanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(12, 12));
+        setBackground(panelBg);
 
         JLabel titleLabel = new JLabel("My Evaluations");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setFont(titleFont);
+        titleLabel.setForeground(new Color(44, 49, 55));
         JLabel subtitleLabel = new JLabel("Evaluations assigned to you");
-        subtitleLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+        subtitleLabel.setFont(subtitleFont);
+        subtitleLabel.setForeground(new Color(108, 113, 118));
 
         JPanel headerPanel = new JPanel(new GridLayout(2, 1));
+        headerPanel.setOpaque(false);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
         headerPanel.add(titleLabel);
         headerPanel.add(subtitleLabel);
         add(headerPanel, BorderLayout.NORTH);
@@ -55,10 +72,48 @@ public class ViewMyEvaluationsPanel extends JPanel {
             }
         };
         evaluationsTable = new JTable(tableModel);
+        evaluationsTable.setFont(tableFont);
+        evaluationsTable.setForeground(rowText);
+        evaluationsTable.setRowHeight(28);
+        evaluationsTable.setShowHorizontalLines(true);
+        evaluationsTable.setShowVerticalLines(false);
+        evaluationsTable.setGridColor(new Color(230, 233, 238));
+        evaluationsTable.setSelectionBackground(selectionBg);
+        evaluationsTable.setSelectionForeground(selectionText);
+        evaluationsTable.setIntercellSpacing(new Dimension(0, 6));
+        evaluationsTable.getTableHeader().setReorderingAllowed(false);
+        evaluationsTable.getTableHeader().setFont(headerFont);
+        evaluationsTable.getTableHeader().setBackground(headerBg);
+        evaluationsTable.getTableHeader().setForeground(headerText);
+        evaluationsTable.getTableHeader().setPreferredSize(new Dimension(0, 34));
+        evaluationsTable.setFillsViewportHeight(true);
         evaluationsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        add(new JScrollPane(evaluationsTable), BorderLayout.CENTER);
+        evaluationsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        evaluationsTable.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                           boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? cardBg : rowAlt);
+                }
+                return c;
+            }
+        });
+        JScrollPane scrollPane = new JScrollPane(evaluationsTable);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(cardBg);
+        JPanel tableCard = new JPanel(new BorderLayout());
+        tableCard.setBackground(cardBg);
+        tableCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+        tableCard.add(scrollPane, BorderLayout.CENTER);
+        add(tableCard, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        buttonPanel.setOpaque(false);
         JButton viewDetailsButton = new JButton("View Details");
         JButton refreshButton = new JButton("Refresh");
 

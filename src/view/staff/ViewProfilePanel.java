@@ -13,6 +13,12 @@ public class ViewProfilePanel extends JPanel {
     private StaffService staffService;
     private LookupService lookupService;
     private Staff staff;
+    private final Color panelBg = new Color(246, 247, 250);
+    private final Color cardBg = Color.WHITE;
+    private final Color borderColor = new Color(220, 224, 230);
+    private final Font titleFont = new Font("Segoe UI", Font.BOLD, 20);
+    private final Font labelFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font valueFont = new Font("Segoe UI", Font.PLAIN, 13);
 
     public ViewProfilePanel(User user) {
         this.currentUser = user;
@@ -23,23 +29,28 @@ public class ViewProfilePanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(12, 12));
+        setBackground(panelBg);
 
         JLabel titleLabel = new JLabel("My Profile");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setFont(titleFont);
+        titleLabel.setForeground(new Color(44, 49, 55));
         add(titleLabel, BorderLayout.NORTH);
 
         if (staff == null) {
             JLabel errorLabel = new JLabel("Staff profile not found", SwingConstants.CENTER);
-            errorLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+            errorLabel.setFont(new Font("Segoe UI", Font.ITALIC, 14));
             errorLabel.setForeground(Color.RED);
             add(errorLabel, BorderLayout.CENTER);
             return;
         }
 
         JPanel formPanel = new JPanel(new GridLayout(12, 2, 10, 10));
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        formPanel.setBackground(cardBg);
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(16, 16, 16, 16)
+        ));
 
         // Get lookup names
         String departmentName = lookupService.getDepartmentNameById(staff.getDepartmentId());
@@ -47,42 +58,42 @@ public class ViewProfilePanel extends JPanel {
         String officeName = lookupService.getOfficeNameById(staff.getOfficeId());
         String leaderName = staffService.getStaffNameById(staff.getLeaderId());
 
-        formPanel.add(new JLabel("Name:"));
-        formPanel.add(new JLabel(staff.getName()));
+        formPanel.add(createLabel("Name:"));
+        formPanel.add(createValueLabel(staff.getName()));
 
-        formPanel.add(new JLabel("Sex:"));
-        formPanel.add(new JLabel(staff.getSex() != null ? staff.getSex() : "N/A"));
+        formPanel.add(createLabel("Sex:"));
+        formPanel.add(createValueLabel(staff.getSex() != null ? staff.getSex() : "N/A"));
 
-        formPanel.add(new JLabel("Date of Birth:"));
-        formPanel.add(new JLabel(staff.getDateOfBirth() != null
+        formPanel.add(createLabel("Date of Birth:"));
+        formPanel.add(createValueLabel(staff.getDateOfBirth() != null
                 ? staff.getDateOfBirth().toString() : "N/A"));
 
-        formPanel.add(new JLabel("Place of Birth:"));
-        formPanel.add(new JLabel(staff.getPlaceOfBirth() != null ? staff.getPlaceOfBirth() : "N/A"));
+        formPanel.add(createLabel("Place of Birth:"));
+        formPanel.add(createValueLabel(staff.getPlaceOfBirth() != null ? staff.getPlaceOfBirth() : "N/A"));
 
-        formPanel.add(new JLabel("Current Address:"));
-        formPanel.add(new JLabel(staff.getCurrentAddress() != null ? staff.getCurrentAddress() : "N/A"));
+        formPanel.add(createLabel("Current Address:"));
+        formPanel.add(createValueLabel(staff.getCurrentAddress() != null ? staff.getCurrentAddress() : "N/A"));
 
-        formPanel.add(new JLabel("Phone:"));
-        formPanel.add(new JLabel(staff.getPhone() != null ? staff.getPhone() : "N/A"));
+        formPanel.add(createLabel("Phone:"));
+        formPanel.add(createValueLabel(staff.getPhone() != null ? staff.getPhone() : "N/A"));
 
-        formPanel.add(new JLabel("Email:"));
-        formPanel.add(new JLabel(staff.getEmail() != null ? staff.getEmail() : "N/A"));
+        formPanel.add(createLabel("Email:"));
+        formPanel.add(createValueLabel(staff.getEmail() != null ? staff.getEmail() : "N/A"));
 
-        formPanel.add(new JLabel("Department:"));
-        formPanel.add(new JLabel(departmentName));
+        formPanel.add(createLabel("Department:"));
+        formPanel.add(createValueLabel(departmentName));
 
-        formPanel.add(new JLabel("Office:"));
-        formPanel.add(new JLabel(officeName));
+        formPanel.add(createLabel("Office:"));
+        formPanel.add(createValueLabel(officeName));
 
-        formPanel.add(new JLabel("Position:"));
-        formPanel.add(new JLabel(positionName));
+        formPanel.add(createLabel("Position:"));
+        formPanel.add(createValueLabel(positionName));
 
-        formPanel.add(new JLabel("Leader:"));
-        formPanel.add(new JLabel(leaderName));
+        formPanel.add(createLabel("Leader:"));
+        formPanel.add(createValueLabel(leaderName));
 
-        formPanel.add(new JLabel("Status:"));
-        JLabel statusLabel = new JLabel(staff.getStatus() != null ? staff.getStatus() : "N/A");
+        formPanel.add(createLabel("Status:"));
+        JLabel statusLabel = createValueLabel(staff.getStatus() != null ? staff.getStatus() : "N/A");
         if ("YES".equals(staff.getStatus())) {
             statusLabel.setForeground(new Color(0, 150, 0)); // Green for active
             statusLabel.setText("Active");
@@ -96,10 +107,25 @@ public class ViewProfilePanel extends JPanel {
 
         // Add a panel with edit button at the bottom
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bottomPanel.setOpaque(false);
         JButton editButton = new JButton("Edit Profile");
         editButton.setEnabled(false); // Disabled for now
         editButton.setToolTipText("Contact admin to update your profile");
         bottomPanel.add(editButton);
         add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(labelFont);
+        label.setForeground(new Color(72, 77, 82));
+        return label;
+    }
+
+    private JLabel createValueLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(valueFont);
+        label.setForeground(new Color(45, 50, 55));
+        return label;
     }
 }

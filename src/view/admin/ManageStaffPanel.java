@@ -1,7 +1,12 @@
 package view.admin;
 
+import model.Company;
 import model.Staff;
 import model.User;
+import service.CompanyService;
+import service.DepartmentService;
+import service.OfficeService;
+import service.PositionService;
 import service.StaffService;
 
 import javax.swing.*;
@@ -17,6 +22,18 @@ public class ManageStaffPanel extends JPanel {
     private StaffService staffService;
     private JTable table;
     private DefaultTableModel tableModel;
+    private final Color panelBg = new Color(246, 247, 250);
+    private final Color cardBg = Color.WHITE;
+    private final Color borderColor = new Color(220, 224, 230);
+    private final Color headerBg = new Color(233, 236, 241);
+    private final Color headerText = new Color(33, 37, 41);
+    private final Color rowAlt = new Color(248, 249, 252);
+    private final Color rowText = new Color(40, 45, 50);
+    private final Color selectionBg = new Color(214, 220, 230);
+    private final Color selectionText = new Color(20, 24, 28);
+    private final Font titleFont = new Font("Segoe UI", Font.BOLD, 20);
+    private final Font tableFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font headerFont = new Font("Segoe UI", Font.BOLD, 13);
 
     public ManageStaffPanel(User user) {
         this.currentUser = user;
@@ -26,16 +43,21 @@ public class ManageStaffPanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(12, 12));
+        setBackground(panelBg);
 
         // Title
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setOpaque(false);
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
         JLabel titleLabel = new JLabel("Manage Staff");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        add(titleLabel, BorderLayout.NORTH);
+        titleLabel.setFont(titleFont);
+        titleLabel.setForeground(new Color(44, 49, 55));
+        titlePanel.add(titleLabel, BorderLayout.WEST);
+        add(titlePanel, BorderLayout.NORTH);
 
         // Table
-        String[] columns = {"ID", "Name", "Sex", "DOB", "Phone", "Email", "Position ID", "Dept ID", "Office ID", "Leader ID", "Status"};
+        String[] columns = {"ID", "Name", "Sex", "DOB", "Phone", "Email", "Company", "Position", "Department", "Office", "Leader", "Status"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -43,13 +65,53 @@ public class ManageStaffPanel extends JPanel {
             }
         };
         table = new JTable(tableModel);
+        table.setFont(tableFont);
+        table.setForeground(rowText);
+        table.setRowHeight(28);
+        table.setShowHorizontalLines(true);
+        table.setShowVerticalLines(false);
+        table.setGridColor(new Color(230, 233, 238));
+        table.setSelectionBackground(selectionBg);
+        table.setSelectionForeground(selectionText);
+        table.setIntercellSpacing(new Dimension(0, 6));
+        table.getTableHeader().setReorderingAllowed(false);
+        table.getTableHeader().setFont(headerFont);
+        table.getTableHeader().setBackground(headerBg);
+        table.getTableHeader().setForeground(headerText);
+        table.getTableHeader().setPreferredSize(new Dimension(0, 34));
+        table.setFillsViewportHeight(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                           boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? cardBg : rowAlt);
+                }
+                return c;
+            }
+        });
+        int[] columnWidths = {60, 160, 70, 110, 120, 180, 160, 140, 140, 140, 160, 80};
+        for (int i = 0; i < columnWidths.length && i < table.getColumnModel().getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
+        }
         JScrollPane scrollPane = new JScrollPane(table);
-        add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(cardBg);
+        JPanel tableCard = new JPanel(new BorderLayout());
+        tableCard.setBackground(cardBg);
+        tableCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+        tableCard.add(scrollPane, BorderLayout.CENTER);
+        add(tableCard, BorderLayout.CENTER);
 
         // Button Panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        buttonPanel.setOpaque(false);
         JButton addButton = new JButton("Add Staff");
         JButton editButton = new JButton("Edit");
         JButton deleteButton = new JButton("Delete");
@@ -70,6 +132,35 @@ public class ManageStaffPanel extends JPanel {
     private void loadData() {
         tableModel.setRowCount(0);
         List<Staff> staffList = staffService.getAllStaffs();
+        CompanyService companyService = new CompanyService();
+        DepartmentService departmentService = new DepartmentService();
+        PositionService positionService = new PositionService();
+        OfficeService officeService = new OfficeService();
+
+        java.util.Map<Long, String> companyNames = new java.util.HashMap<>();
+        for (Company company : companyService.getAllCompanies()) {
+            companyNames.put(company.getId(), company.getName());
+        }
+
+        java.util.Map<Long, String> positionNames = new java.util.HashMap<>();
+        for (model.Position position : positionService.getAllPositions()) {
+            positionNames.put(position.getId(), position.getName());
+        }
+
+        java.util.Map<Long, String> departmentNames = new java.util.HashMap<>();
+        for (model.Department department : departmentService.getAllDepartments()) {
+            departmentNames.put(department.getId(), department.getName());
+        }
+
+        java.util.Map<Long, String> officeNames = new java.util.HashMap<>();
+        for (model.Office office : officeService.getAllOffices()) {
+            officeNames.put(office.getId(), office.getName());
+        }
+
+        java.util.Map<Long, String> staffNames = new java.util.HashMap<>();
+        for (Staff staff : staffList) {
+            staffNames.put(staff.getId(), staff.getName());
+        }
 
         for (Staff staff : staffList) {
             if (staff.getCompanyId().equals(currentUser.getCompanyId())) {
@@ -80,10 +171,11 @@ public class ManageStaffPanel extends JPanel {
                         staff.getDateOfBirth(),
                         staff.getPhone(),
                         staff.getEmail(),
-                        staff.getPositionId(),
-                        staff.getDepartmentId(),
-                        staff.getOfficeId(),
-                        staff.getLeaderId(),
+                        companyNames.getOrDefault(staff.getCompanyId(), "N/A"),
+                        positionNames.getOrDefault(staff.getPositionId(), "N/A"),
+                        departmentNames.getOrDefault(staff.getDepartmentId(), "N/A"),
+                        officeNames.getOrDefault(staff.getOfficeId(), "N/A"),
+                        staffNames.getOrDefault(staff.getLeaderId(), "None"),
                         staff.getStatus()
                 });
             }
@@ -108,14 +200,67 @@ public class ManageStaffPanel extends JPanel {
         addressArea.setWrapStyleWord(true);
         JTextField phoneField = new JTextField(25);
         JTextField emailField = new JTextField(25);
-        JTextField leaderIdField = new JTextField(25);
-        JTextField positionIdField = new JTextField(25);
-        JTextField departmentIdField = new JTextField(25);
-        JTextField officeIdField = new JTextField(25);
+        CompanyService companyService = new CompanyService();
+        DepartmentService departmentService = new DepartmentService();
+        PositionService positionService = new PositionService();
+        OfficeService officeService = new OfficeService();
+
+        JComboBox<ComboItem> companyCombo = new JComboBox<>();
+        companyCombo.addItem(new ComboItem(null, "Select Company"));
+        List<Company> companies = companyService.getAllCompanies();
+        for (Company company : companies) {
+            companyCombo.addItem(new ComboItem(company.getId(), company.getName()));
+        }
+
+        JComboBox<ComboItem> leaderCombo = new JComboBox<>();
+        JComboBox<ComboItem> positionCombo = new JComboBox<>();
+        JComboBox<ComboItem> departmentCombo = new JComboBox<>();
+        JComboBox<ComboItem> officeCombo = new JComboBox<>();
         JComboBox<String> statusCombo = new JComboBox<>(new String[]{"YES", "NO"});
+
+        Runnable reloadCompanyOptions = () -> {
+            Long companyId = getSelectedId(companyCombo);
+
+            leaderCombo.removeAllItems();
+            leaderCombo.addItem(new ComboItem(null, "None"));
+            positionCombo.removeAllItems();
+            departmentCombo.removeAllItems();
+            officeCombo.removeAllItems();
+
+            if (companyId == null) {
+                return;
+            }
+
+            List<Staff> leaders = staffService.getStaffByCompany(companyId);
+            for (Staff leader : leaders) {
+                leaderCombo.addItem(new ComboItem(leader.getId(),
+                        leader.getName() + " (ID: " + leader.getId() + ")"));
+            }
+
+            for (model.Position position : positionService.getPositionsByCompanyId(companyId)) {
+                positionCombo.addItem(new ComboItem(position.getId(), position.getName()));
+            }
+
+            for (model.Department department : departmentService.getDepartmentsByCompanyId(companyId)) {
+                departmentCombo.addItem(new ComboItem(department.getId(), department.getName()));
+            }
+
+            for (model.Office office : officeService.getOfficesByCompanyId(companyId)) {
+                officeCombo.addItem(new ComboItem(office.getId(), office.getName()));
+            }
+        };
+
+        companyCombo.addActionListener(e -> reloadCompanyOptions.run());
+        reloadCompanyOptions.run();
 
         int row = 0;
 
+        gbc.gridx = 0; gbc.gridy = row;
+        dialog.add(new JLabel("Company:"), gbc);
+        gbc.gridx = 1;
+        dialog.add(companyCombo, gbc);
+
+        row++;
         gbc.gridx = 0; gbc.gridy = row;
         dialog.add(new JLabel("Name:"), gbc);
         gbc.gridx = 1;
@@ -161,27 +306,27 @@ public class ManageStaffPanel extends JPanel {
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        dialog.add(new JLabel("Leader ID:"), gbc);
+        dialog.add(new JLabel("Leader:"), gbc);
         gbc.gridx = 1;
-        dialog.add(leaderIdField, gbc);
+        dialog.add(leaderCombo, gbc);
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        dialog.add(new JLabel("Position ID:"), gbc);
+        dialog.add(new JLabel("Position:"), gbc);
         gbc.gridx = 1;
-        dialog.add(positionIdField, gbc);
+        dialog.add(positionCombo, gbc);
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        dialog.add(new JLabel("Department ID:"), gbc);
+        dialog.add(new JLabel("Department:"), gbc);
         gbc.gridx = 1;
-        dialog.add(departmentIdField, gbc);
+        dialog.add(departmentCombo, gbc);
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        dialog.add(new JLabel("Office ID:"), gbc);
+        dialog.add(new JLabel("Office:"), gbc);
         gbc.gridx = 1;
-        dialog.add(officeIdField, gbc);
+        dialog.add(officeCombo, gbc);
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
@@ -205,6 +350,12 @@ public class ManageStaffPanel extends JPanel {
                 String email = emailField.getText().trim();
                 String status = (String) statusCombo.getSelectedItem();
 
+                Long companyId = getSelectedId(companyCombo);
+                if (companyId == null) {
+                    JOptionPane.showMessageDialog(dialog, "Please select a company.");
+                    return;
+                }
+
                 if (name.isEmpty() || dobStr.isEmpty()) {
                     JOptionPane.showMessageDialog(dialog, "Name and Date of Birth are required");
                     return;
@@ -212,10 +363,23 @@ public class ManageStaffPanel extends JPanel {
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate dob = LocalDate.parse(dobStr, formatter);
-                Long leaderId = leaderIdField.getText().trim().isEmpty() ? null : Long.parseLong(leaderIdField.getText().trim());
-                Long positionId = positionIdField.getText().trim().isEmpty() ? null : Long.parseLong(positionIdField.getText().trim());
-                Long departmentId = departmentIdField.getText().trim().isEmpty() ? null : Long.parseLong(departmentIdField.getText().trim());
-                Long officeId = officeIdField.getText().trim().isEmpty() ? null : Long.parseLong(officeIdField.getText().trim());
+                ComboItem leaderItem = (ComboItem) leaderCombo.getSelectedItem();
+                ComboItem positionItem = (ComboItem) positionCombo.getSelectedItem();
+                ComboItem departmentItem = (ComboItem) departmentCombo.getSelectedItem();
+                ComboItem officeItem = (ComboItem) officeCombo.getSelectedItem();
+
+                if (positionItem == null || positionItem.id == null ||
+                        departmentItem == null || departmentItem.id == null ||
+                        officeItem == null || officeItem.id == null) {
+                    JOptionPane.showMessageDialog(dialog,
+                            "Please select Position, Department, and Office before saving.");
+                    return;
+                }
+
+                Long leaderId = leaderItem != null ? leaderItem.id : null;
+                Long positionId = positionItem.id;
+                Long departmentId = departmentItem.id;
+                Long officeId = officeItem.id;
 
                 Staff staff = new Staff();
                 staff.setName(name);
@@ -230,7 +394,7 @@ public class ManageStaffPanel extends JPanel {
                 staff.setDepartmentId(departmentId);
                 staff.setOfficeId(officeId);
                 staff.setStatus(status);
-                staff.setCompanyId(currentUser.getCompanyId());
+                staff.setCompanyId(companyId);
                 staff.setCreatedBy(currentUser.getId());
 
                 boolean success = staffService.addStaff(staff);
@@ -244,7 +408,7 @@ public class ManageStaffPanel extends JPanel {
             } catch (DateTimeParseException ex) {
                 JOptionPane.showMessageDialog(dialog, "Invalid date format. Use: yyyy-MM-dd");
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Invalid number format for ID fields");
+                JOptionPane.showMessageDialog(dialog, "Invalid number format.");
             }
         });
 
@@ -259,6 +423,21 @@ public class ManageStaffPanel extends JPanel {
 
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
+    }
+
+    private static class ComboItem {
+        private final Long id;
+        private final String label;
+
+        private ComboItem(Long id, String label) {
+            this.id = id;
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 
     private void editStaff() {
@@ -295,12 +474,37 @@ public class ManageStaffPanel extends JPanel {
         addressArea.setWrapStyleWord(true);
         JTextField phoneField = new JTextField(currentStaff.getPhone() != null ? currentStaff.getPhone() : "", 25);
         JTextField emailField = new JTextField(currentStaff.getEmail() != null ? currentStaff.getEmail() : "", 25);
-        JTextField leaderIdField = new JTextField(currentStaff.getLeaderId() != null ? currentStaff.getLeaderId().toString() : "", 25);
-        JTextField positionIdField = new JTextField(currentStaff.getPositionId() != null ? currentStaff.getPositionId().toString() : "", 25);
-        JTextField departmentIdField = new JTextField(currentStaff.getDepartmentId() != null ? currentStaff.getDepartmentId().toString() : "", 25);
-        JTextField officeIdField = new JTextField(currentStaff.getOfficeId() != null ? currentStaff.getOfficeId().toString() : "", 25);
+        DepartmentService departmentService = new DepartmentService();
+        PositionService positionService = new PositionService();
+        OfficeService officeService = new OfficeService();
+
+        JComboBox<ComboItem> leaderCombo = new JComboBox<>();
+        leaderCombo.addItem(new ComboItem(null, "None"));
+        List<Staff> leaders = staffService.getStaffByCompany(currentUser.getCompanyId());
+        for (Staff leader : leaders) {
+            leaderCombo.addItem(new ComboItem(leader.getId(), leader.getName() + " (ID: " + leader.getId() + ")"));
+        }
+
+        JComboBox<ComboItem> positionCombo = new JComboBox<>();
+        for (model.Position position : positionService.getPositionsByCompanyId(currentUser.getCompanyId())) {
+            positionCombo.addItem(new ComboItem(position.getId(), position.getName()));
+        }
+
+        JComboBox<ComboItem> departmentCombo = new JComboBox<>();
+        for (model.Department department : departmentService.getDepartmentsByCompanyId(currentUser.getCompanyId())) {
+            departmentCombo.addItem(new ComboItem(department.getId(), department.getName()));
+        }
+
+        JComboBox<ComboItem> officeCombo = new JComboBox<>();
+        for (model.Office office : officeService.getOfficesByCompanyId(currentUser.getCompanyId())) {
+            officeCombo.addItem(new ComboItem(office.getId(), office.getName()));
+        }
         JComboBox<String> statusCombo = new JComboBox<>(new String[]{"YES", "NO"});
         statusCombo.setSelectedItem(currentStaff.getStatus());
+        selectComboItem(leaderCombo, currentStaff.getLeaderId());
+        selectComboItem(positionCombo, currentStaff.getPositionId());
+        selectComboItem(departmentCombo, currentStaff.getDepartmentId());
+        selectComboItem(officeCombo, currentStaff.getOfficeId());
 
         int row = 0;
 
@@ -349,27 +553,27 @@ public class ManageStaffPanel extends JPanel {
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        dialog.add(new JLabel("Leader ID:"), gbc);
+        dialog.add(new JLabel("Leader:"), gbc);
         gbc.gridx = 1;
-        dialog.add(leaderIdField, gbc);
+        dialog.add(leaderCombo, gbc);
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        dialog.add(new JLabel("Position ID:"), gbc);
+        dialog.add(new JLabel("Position:"), gbc);
         gbc.gridx = 1;
-        dialog.add(positionIdField, gbc);
+        dialog.add(positionCombo, gbc);
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        dialog.add(new JLabel("Department ID:"), gbc);
+        dialog.add(new JLabel("Department:"), gbc);
         gbc.gridx = 1;
-        dialog.add(departmentIdField, gbc);
+        dialog.add(departmentCombo, gbc);
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        dialog.add(new JLabel("Office ID:"), gbc);
+        dialog.add(new JLabel("Office:"), gbc);
         gbc.gridx = 1;
-        dialog.add(officeIdField, gbc);
+        dialog.add(officeCombo, gbc);
 
         row++;
         gbc.gridx = 0; gbc.gridy = row;
@@ -400,10 +604,23 @@ public class ManageStaffPanel extends JPanel {
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate dob = LocalDate.parse(dobStr, formatter);
-                Long leaderId = leaderIdField.getText().trim().isEmpty() ? null : Long.parseLong(leaderIdField.getText().trim());
-                Long positionId = positionIdField.getText().trim().isEmpty() ? null : Long.parseLong(positionIdField.getText().trim());
-                Long departmentId = departmentIdField.getText().trim().isEmpty() ? null : Long.parseLong(departmentIdField.getText().trim());
-                Long officeId = officeIdField.getText().trim().isEmpty() ? null : Long.parseLong(officeIdField.getText().trim());
+                ComboItem leaderItem = (ComboItem) leaderCombo.getSelectedItem();
+                ComboItem positionItem = (ComboItem) positionCombo.getSelectedItem();
+                ComboItem departmentItem = (ComboItem) departmentCombo.getSelectedItem();
+                ComboItem officeItem = (ComboItem) officeCombo.getSelectedItem();
+
+                if (positionItem == null || positionItem.id == null ||
+                        departmentItem == null || departmentItem.id == null ||
+                        officeItem == null || officeItem.id == null) {
+                    JOptionPane.showMessageDialog(dialog,
+                            "Please select Position, Department, and Office before saving.");
+                    return;
+                }
+
+                Long leaderId = leaderItem != null ? leaderItem.id : null;
+                Long positionId = positionItem.id;
+                Long departmentId = departmentItem.id;
+                Long officeId = officeItem.id;
 
                 Staff staff = new Staff();
                 staff.setId(id);
@@ -432,7 +649,7 @@ public class ManageStaffPanel extends JPanel {
             } catch (DateTimeParseException ex) {
                 JOptionPane.showMessageDialog(dialog, "Invalid date format. Use: yyyy-MM-dd");
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Invalid number format for ID fields");
+                JOptionPane.showMessageDialog(dialog, "Invalid number format.");
             }
         });
 
@@ -447,6 +664,27 @@ public class ManageStaffPanel extends JPanel {
 
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
+    }
+
+    private void selectComboItem(JComboBox<ComboItem> comboBox, Long id) {
+        if (comboBox == null || id == null) {
+            return;
+        }
+        for (int i = 0; i < comboBox.getItemCount(); i++) {
+            ComboItem item = comboBox.getItemAt(i);
+            if (item != null && id.equals(item.id)) {
+                comboBox.setSelectedIndex(i);
+                return;
+            }
+        }
+    }
+
+    private Long getSelectedId(JComboBox<ComboItem> comboBox) {
+        if (comboBox == null) {
+            return null;
+        }
+        ComboItem item = (ComboItem) comboBox.getSelectedItem();
+        return item != null ? item.id : null;
     }
 
     private void deleteStaff() {

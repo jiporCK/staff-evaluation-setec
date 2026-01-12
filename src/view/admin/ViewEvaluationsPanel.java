@@ -17,6 +17,15 @@ public class ViewEvaluationsPanel extends JPanel {
     private EvaluationService evaluationService;
     private StaffService staffService;
     private PeriodService periodService;
+    private final Color pageBg = new Color(246, 247, 250);
+    private final Color cardBg = Color.WHITE;
+    private final Color borderColor = new Color(220, 224, 230);
+    private final Color textPrimary = new Color(33, 37, 41);
+    private final Color textMuted = new Color(110, 116, 122);
+    private final Font titleFont = new Font("Segoe UI", Font.BOLD, 24);
+    private final Font subtitleFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font labelFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font buttonFont = new Font("Segoe UI", Font.BOLD, 13);
 
     // Main table components
     private JTable evaluationsTable;
@@ -43,7 +52,8 @@ public class ViewEvaluationsPanel extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout(10, 10));
-        setBorder(new EmptyBorder(15, 15, 15, 15));
+        setBorder(new EmptyBorder(24, 24, 24, 24));
+        setBackground(pageBg);
 
         // Header Panel
         add(createHeaderPanel(), BorderLayout.NORTH);
@@ -54,6 +64,9 @@ public class ViewEvaluationsPanel extends JPanel {
         splitPane.setBottomComponent(createDetailsPanel());
         splitPane.setDividerLocation(400);
         splitPane.setResizeWeight(0.7);
+        splitPane.setDividerSize(8);
+        splitPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        splitPane.setBackground(pageBg);
         add(splitPane, BorderLayout.CENTER);
 
         // Bottom panel with stats and actions
@@ -62,13 +75,21 @@ public class ViewEvaluationsPanel extends JPanel {
 
     private JPanel createHeaderPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(new EmptyBorder(0, 0, 10, 0));
+        panel.setOpaque(false);
+        panel.setBorder(new EmptyBorder(0, 0, 12, 0));
 
         // Title
         JLabel titleLabel = new JLabel("View All Staff Evaluations");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setForeground(new Color(33, 150, 243));
-        panel.add(titleLabel, BorderLayout.NORTH);
+        titleLabel.setFont(titleFont);
+        titleLabel.setForeground(textPrimary);
+        JLabel subtitleLabel = new JLabel("Filter and review evaluation progress across staff.");
+        subtitleLabel.setFont(subtitleFont);
+        subtitleLabel.setForeground(textMuted);
+        JPanel titlePanel = new JPanel(new GridLayout(2, 1, 0, 4));
+        titlePanel.setOpaque(false);
+        titlePanel.add(titleLabel);
+        titlePanel.add(subtitleLabel);
+        panel.add(titlePanel, BorderLayout.NORTH);
 
         // Filter Panel
         panel.add(createFilterPanel(), BorderLayout.CENTER);
@@ -79,14 +100,20 @@ public class ViewEvaluationsPanel extends JPanel {
     private JPanel createFilterPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createTitledBorder("Filters & Search"));
+        panel.setBackground(cardBg);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(12, 12, 12, 12)
+        ));
 
         // Row 1: Period and Status filters
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        row1.setBackground(cardBg);
 
         row1.add(new JLabel("Period:"));
         periodFilterCombo = new JComboBox<>();
-        periodFilterCombo.setPreferredSize(new Dimension(200, 25));
+        periodFilterCombo.setFont(labelFont);
+        periodFilterCombo.setPreferredSize(new Dimension(220, 32));
         periodFilterCombo.addActionListener(e -> applyFilters());
         row1.add(periodFilterCombo);
 
@@ -96,7 +123,8 @@ public class ViewEvaluationsPanel extends JPanel {
         statusFilterCombo = new JComboBox<>(new String[]{
                 "All", "Completed", "Pending", "In Progress"
         });
-        statusFilterCombo.setPreferredSize(new Dimension(150, 25));
+        statusFilterCombo.setFont(labelFont);
+        statusFilterCombo.setPreferredSize(new Dimension(180, 32));
         statusFilterCombo.addActionListener(e -> applyFilters());
         row1.add(statusFilterCombo);
 
@@ -104,9 +132,12 @@ public class ViewEvaluationsPanel extends JPanel {
 
         // Row 2: Search
         JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        row2.setBackground(cardBg);
 
         row2.add(new JLabel("Search Staff:"));
         searchField = new JTextField(30);
+        searchField.setFont(labelFont);
+        searchField.setPreferredSize(new Dimension(320, 32));
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -116,6 +147,7 @@ public class ViewEvaluationsPanel extends JPanel {
         row2.add(searchField);
 
         JButton clearButton = new JButton("Clear Filters");
+        styleButton(clearButton);
         clearButton.addActionListener(e -> clearFilters());
         row2.add(clearButton);
 
@@ -126,7 +158,11 @@ public class ViewEvaluationsPanel extends JPanel {
 
     private JPanel createTablePanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Evaluations List"));
+        panel.setBackground(cardBg);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(12, 12, 12, 12)
+        ));
 
         String[] columns = {
                 "ID", "Period", "For Staff", "Staff ID", "Position",
@@ -150,7 +186,9 @@ public class ViewEvaluationsPanel extends JPanel {
         evaluationsTable = new JTable(tableModel);
         evaluationsTable.setAutoCreateRowSorter(true);
         evaluationsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        evaluationsTable.setRowHeight(25);
+        evaluationsTable.setRowHeight(32);
+        evaluationsTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        evaluationsTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
 
         // Custom column widths
         TableColumnModel columnModel = evaluationsTable.getColumnModel();
@@ -176,6 +214,10 @@ public class ViewEvaluationsPanel extends JPanel {
         });
 
         JScrollPane scrollPane = new JScrollPane(evaluationsTable);
+        JLabel tableTitle = new JLabel("Evaluations List");
+        tableTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tableTitle.setForeground(textPrimary);
+        panel.add(tableTitle, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
@@ -183,23 +225,28 @@ public class ViewEvaluationsPanel extends JPanel {
 
     private JPanel createDetailsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Quick Actions"));
+        panel.setBackground(cardBg);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(12, 12, 12, 12)
+        ));
 
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        buttonsPanel.setBackground(cardBg);
 
-        JButton viewDetailsBtn = createStyledButton("View Full Details", new Color(33, 150, 243));
+        JButton viewDetailsBtn = createStyledButton("View Full Details");
         viewDetailsBtn.addActionListener(e -> viewDetailedEvaluation());
 
-        JButton viewScoresBtn = createStyledButton("View All Scores", new Color(76, 175, 80));
+        JButton viewScoresBtn = createStyledButton("View All Scores");
         viewScoresBtn.addActionListener(e -> viewAllScores());
 
-        JButton exportBtn = createStyledButton("Export Selected", new Color(255, 152, 0));
+        JButton exportBtn = createStyledButton("Export Selected");
         exportBtn.addActionListener(e -> exportSelectedEvaluation());
 
-        JButton statsBtn = createStyledButton("View Statistics", new Color(156, 39, 176));
+        JButton statsBtn = createStyledButton("View Statistics");
         statsBtn.addActionListener(e -> viewStatistics());
 
-        JButton refreshBtn = createStyledButton("Refresh Data", new Color(96, 125, 139));
+        JButton refreshBtn = createStyledButton("Refresh Data");
         refreshBtn.addActionListener(e -> loadEvaluations());
 
         buttonsPanel.add(viewDetailsBtn);
@@ -213,24 +260,43 @@ public class ViewEvaluationsPanel extends JPanel {
         return panel;
     }
 
-    private JButton createStyledButton(String text, Color color) {
+    private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
-        button.setBackground(color);
-        button.setForeground(Color.WHITE);
+        button.setBackground(new Color(229, 233, 238));
+        button.setForeground(textPrimary);
         button.setFocusPainted(false);
-        button.setPreferredSize(new Dimension(150, 35));
+        button.setPreferredSize(new Dimension(170, 38));
+        button.setFont(buttonFont);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 204, 210), 1, true),
+                BorderFactory.createEmptyBorder(8, 16, 8, 16)
+        ));
         return button;
     }
 
     private JPanel createBottomPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(new EmptyBorder(10, 0, 0, 0));
+        panel.setOpaque(false);
+        panel.setBorder(new EmptyBorder(12, 0, 0, 0));
 
         statsLabel = new JLabel("Ready");
-        statsLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        statsLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        statsLabel.setForeground(textMuted);
         panel.add(statsLabel, BorderLayout.WEST);
 
         return panel;
+    }
+
+    private void styleButton(JButton button) {
+        button.setFont(buttonFont);
+        button.setBackground(new Color(229, 233, 238));
+        button.setForeground(textPrimary);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 204, 210), 1, true),
+                BorderFactory.createEmptyBorder(8, 16, 8, 16)
+        ));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     // Data Loading Methods
