@@ -14,12 +14,13 @@ public class DbConnection {
     public static Connection getConnection() {
 
         try {
+            Class.forName("org.postgresql.Driver");
             return DriverManager.getConnection(
                     "jdbc:postgresql://localhost:5432/staff_evaluation_db",
-                    "admin",
-                    "admin123"
+                    "postgres",
+                    "123Admin"
             );
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);
         }
 

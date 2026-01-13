@@ -17,19 +17,37 @@ public class ManageEvaluationPointsPanel extends JPanel {
     private DefaultTableModel tableModel;
     private Long currentCompanyId;
     private Long currentUserId;
+    private final Color pageBg = new Color(246, 247, 250);
+    private final Color cardBg = Color.WHITE;
+    private final Color borderColor = new Color(220, 224, 230);
+    private final Color textPrimary = new Color(33, 37, 41);
+    private final Color textMuted = new Color(110, 116, 122);
+    private final Font titleFont = new Font("Segoe UI", Font.BOLD, 24);
+    private final Font subtitleFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font labelFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font buttonFont = new Font("Segoe UI", Font.BOLD, 13);
 
     public ManageEvaluationPointsPanel(Long companyId, Long userId) {
         this.evaluationService = new EvaluationService();
         this.currentCompanyId = companyId;
         this.currentUserId = userId;
 
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(new BorderLayout(16, 16));
+        setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+        setBackground(pageBg);
 
         // Title
+        JPanel headerPanel = new JPanel(new BorderLayout(0, 6));
+        headerPanel.setOpaque(false);
         JLabel titleLabel = new JLabel("Manage Evaluation Points");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        add(titleLabel, BorderLayout.NORTH);
+        titleLabel.setFont(titleFont);
+        titleLabel.setForeground(textPrimary);
+        JLabel subtitleLabel = new JLabel("Define the criteria and scoring ranges used in staff evaluations.");
+        subtitleLabel.setFont(subtitleFont);
+        subtitleLabel.setForeground(textMuted);
+        headerPanel.add(titleLabel, BorderLayout.NORTH);
+        headerPanel.add(subtitleLabel, BorderLayout.SOUTH);
+        add(headerPanel, BorderLayout.NORTH);
 
         // Table
         String[] columns = {"ID", "Name", "Score From", "Score To", "Created At"};
@@ -40,15 +58,40 @@ public class ManageEvaluationPointsPanel extends JPanel {
             }
         };
         table = new JTable(tableModel);
+        table.setRowHeight(32);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
         JScrollPane scrollPane = new JScrollPane(table);
-        add(scrollPane, BorderLayout.CENTER);
+
+        JPanel tableCard = new JPanel(new BorderLayout());
+        tableCard.setBackground(cardBg);
+        tableCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(12, 12, 12, 12)
+        ));
+        JLabel tableTitle = new JLabel("Evaluation Points");
+        tableTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tableTitle.setForeground(textPrimary);
+        tableCard.add(tableTitle, BorderLayout.NORTH);
+        tableCard.add(scrollPane, BorderLayout.CENTER);
+        add(tableCard, BorderLayout.CENTER);
 
         // Button Panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        buttonPanel.setBackground(cardBg);
+        buttonPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(8, 12, 8, 12)
+        ));
         JButton addButton = new JButton("Add New");
         JButton editButton = new JButton("Edit");
         JButton deleteButton = new JButton("Delete");
         JButton refreshButton = new JButton("Refresh");
+
+        styleButton(addButton);
+        styleButton(editButton);
+        styleButton(deleteButton);
+        styleButton(refreshButton);
 
         addButton.addActionListener(e -> showAddDialog());
         editButton.addActionListener(e -> showEditDialog());
@@ -62,6 +105,18 @@ public class ManageEvaluationPointsPanel extends JPanel {
         add(buttonPanel, BorderLayout.SOUTH);
 
         loadData();
+    }
+
+    private void styleButton(JButton button) {
+        button.setFont(buttonFont);
+        button.setBackground(new Color(229, 233, 238));
+        button.setForeground(textPrimary);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 204, 210), 1, true),
+                BorderFactory.createEmptyBorder(8, 16, 8, 16)
+        ));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     private void loadData() {

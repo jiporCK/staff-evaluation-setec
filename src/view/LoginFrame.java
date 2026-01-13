@@ -18,64 +18,117 @@ public class LoginFrame extends JFrame {
         userService = new UserService();
         initComponents();
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     private void initComponents() {
         setTitle("Staff Evaluation System - Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 300);
+        setSize(520, 360);
+        setMinimumSize(new Dimension(480, 330));
         setLayout(new BorderLayout());
 
-        // Main panel
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(new Color(246, 247, 250));
+        root.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
 
-        // Title
-        JLabel titleLabel = new JLabel("Staff Evaluation System");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
+
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBackground(Color.WHITE);
+
+        JLabel title = new JLabel("Staff Evaluation");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(new Color(28, 31, 35));
+
+        JLabel subtitle = new JLabel("Sign in to manage evaluations and results");
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        subtitle.setForeground(new Color(96, 102, 108));
+
+        JLabel userLabel = new JLabel("Username");
+        userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        userLabel.setForeground(new Color(82, 88, 94));
+
+        JLabel passLabel = new JLabel("Password");
+        passLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        passLabel.setForeground(new Color(82, 88, 94));
+
+        usernameField = new JTextField(28);
+        passwordField = new JPasswordField(28);
+        styleTextField(usernameField);
+        styleTextField(passwordField);
+
+        loginButton = new JButton("Login");
+        stylePrimaryButton(loginButton);
+
+        GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(titleLabel, gbc);
-
-        // Username label
-        gbc.gridwidth = 1;
-        gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.WEST;
-        mainPanel.add(new JLabel("Username:"), gbc);
+        gbc.insets = new Insets(0, 0, 6, 0);
+        formPanel.add(title, gbc);
 
-        // Username field
-        usernameField = new JTextField(20);
-        gbc.gridx = 1;
-        mainPanel.add(usernameField, gbc);
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 0, 18, 0);
+        formPanel.add(subtitle, gbc);
 
-        // Password label
-        gbc.gridx = 0;
         gbc.gridy = 2;
-        mainPanel.add(new JLabel("Password:"), gbc);
+        gbc.insets = new Insets(0, 0, 6, 0);
+        formPanel.add(userLabel, gbc);
 
-        // Password field
-        passwordField = new JPasswordField(20);
-        gbc.gridx = 1;
-        mainPanel.add(passwordField, gbc);
-
-        // Login button
-        loginButton = new JButton("Login");
-        gbc.gridx = 0;
         gbc.gridy = 3;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(loginButton, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(0, 0, 12, 0);
+        formPanel.add(usernameField, gbc);
 
-        // Add action listeners
+        gbc.gridy = 4;
+        gbc.insets = new Insets(0, 0, 6, 0);
+        gbc.fill = GridBagConstraints.NONE;
+        formPanel.add(passLabel, gbc);
+
+        gbc.gridy = 5;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(0, 0, 18, 0);
+        formPanel.add(passwordField, gbc);
+
+        gbc.gridy = 6;
+        gbc.insets = new Insets(0, 0, 6, 0);
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        formPanel.add(loginButton, gbc);
+
+        card.add(formPanel, BorderLayout.CENTER);
+        root.add(card, BorderLayout.CENTER);
+
+        setContentPane(root);
+
         loginButton.addActionListener(e -> performLogin());
         passwordField.addActionListener(e -> performLogin());
+    }
 
-        add(mainPanel, BorderLayout.CENTER);
+    private void styleTextField(JTextField field) {
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(210, 214, 220), 1, true),
+                BorderFactory.createEmptyBorder(10, 12, 10, 12)
+        ));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBackground(new Color(250, 251, 252));
+        field.setPreferredSize(new Dimension(320, 38));
+    }
+
+    private void stylePrimaryButton(JButton button) {
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        button.setForeground(Color.BLACK);
+        button.setBackground(new Color(229, 233, 238));
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 204, 210), 1, true),
+                BorderFactory.createEmptyBorder(8, 20, 8, 20)
+        ));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     private void performLogin() {

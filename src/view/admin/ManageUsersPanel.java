@@ -15,6 +15,18 @@ public class ManageUsersPanel extends JPanel {
     private UserService userService;
     private JTable usersTable;
     private DefaultTableModel tableModel;
+    private final Color panelBg = new Color(246, 247, 250);
+    private final Color cardBg = Color.WHITE;
+    private final Color borderColor = new Color(220, 224, 230);
+    private final Color headerBg = new Color(233, 236, 241);
+    private final Color headerText = new Color(33, 37, 41);
+    private final Color rowAlt = new Color(248, 249, 252);
+    private final Color rowText = new Color(40, 45, 50);
+    private final Color selectionBg = new Color(214, 220, 230);
+    private final Color selectionText = new Color(20, 24, 28);
+    private final Font titleFont = new Font("Segoe UI", Font.BOLD, 20);
+    private final Font tableFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font headerFont = new Font("Segoe UI", Font.BOLD, 13);
 
     public ManageUsersPanel(User user) {
         this.currentUser = user;
@@ -24,11 +36,17 @@ public class ManageUsersPanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(12, 12));
+        setBackground(panelBg);
 
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setOpaque(false);
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
         JLabel titleLabel = new JLabel("Manage Users");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        add(titleLabel, BorderLayout.NORTH);
+        titleLabel.setFont(titleFont);
+        titleLabel.setForeground(new Color(44, 49, 55));
+        titlePanel.add(titleLabel, BorderLayout.WEST);
+        add(titlePanel, BorderLayout.NORTH);
 
         String[] columns = {"ID", "Username", "User Group", "Description", "Status"};
         tableModel = new DefaultTableModel(columns, 0) {
@@ -38,9 +56,47 @@ public class ManageUsersPanel extends JPanel {
             }
         };
         usersTable = new JTable(tableModel);
-        add(new JScrollPane(usersTable), BorderLayout.CENTER);
+        usersTable.setFont(tableFont);
+        usersTable.setForeground(rowText);
+        usersTable.setRowHeight(28);
+        usersTable.setShowHorizontalLines(true);
+        usersTable.setShowVerticalLines(false);
+        usersTable.setGridColor(new Color(230, 233, 238));
+        usersTable.setSelectionBackground(selectionBg);
+        usersTable.setSelectionForeground(selectionText);
+        usersTable.setIntercellSpacing(new Dimension(0, 6));
+        usersTable.getTableHeader().setReorderingAllowed(false);
+        usersTable.getTableHeader().setFont(headerFont);
+        usersTable.getTableHeader().setBackground(headerBg);
+        usersTable.getTableHeader().setForeground(headerText);
+        usersTable.getTableHeader().setPreferredSize(new Dimension(0, 34));
+        usersTable.setFillsViewportHeight(true);
+        usersTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        usersTable.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                           boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? cardBg : rowAlt);
+                }
+                return c;
+            }
+        });
+        JScrollPane scrollPane = new JScrollPane(usersTable);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(cardBg);
+        JPanel tableCard = new JPanel(new BorderLayout());
+        tableCard.setBackground(cardBg);
+        tableCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+        tableCard.add(scrollPane, BorderLayout.CENTER);
+        add(tableCard, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        buttonPanel.setOpaque(false);
         JButton addButton = new JButton("Add User");
         JButton editButton = new JButton("Edit User");
         JButton deleteButton = new JButton("Delete User");

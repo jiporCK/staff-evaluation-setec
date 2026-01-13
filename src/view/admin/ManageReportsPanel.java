@@ -34,6 +34,15 @@ public class ManageReportsPanel extends JPanel {
     private JSpinner topNSpinner;
     private JTextField evaluationIdField;
     private Long currentCompanyId;
+    private final Color pageBg = new Color(246, 247, 250);
+    private final Color cardBg = Color.WHITE;
+    private final Color borderColor = new Color(220, 224, 230);
+    private final Color textPrimary = new Color(33, 37, 41);
+    private final Color textMuted = new Color(110, 116, 122);
+    private final Font titleFont = new Font("Segoe UI", Font.BOLD, 24);
+    private final Font subtitleFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font labelFont = new Font("Segoe UI", Font.PLAIN, 13);
+    private final Font buttonFont = new Font("Segoe UI", Font.BOLD, 13);
 
     public ManageReportsPanel(Long companyId) {
         this.currentCompanyId = companyId;
@@ -53,8 +62,9 @@ public class ManageReportsPanel extends JPanel {
     }
 
     private void initializeUI() {
-        setLayout(new BorderLayout(10, 10));
-        setBorder(new EmptyBorder(15, 15, 15, 15));
+        setLayout(new BorderLayout(16, 16));
+        setBorder(new EmptyBorder(24, 24, 24, 24));
+        setBackground(pageBg);
 
         // Title Panel
         add(createTitlePanel(), BorderLayout.NORTH);
@@ -64,6 +74,9 @@ public class ManageReportsPanel extends JPanel {
         splitPane.setLeftComponent(createControlPanel());
         splitPane.setRightComponent(createDisplayPanel());
         splitPane.setDividerLocation(350);
+        splitPane.setDividerSize(10);
+        splitPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        splitPane.setBackground(pageBg);
         add(splitPane, BorderLayout.CENTER);
 
         // Status Panel
@@ -72,12 +85,20 @@ public class ManageReportsPanel extends JPanel {
 
     private JPanel createTitlePanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(new EmptyBorder(0, 0, 10, 0));
+        panel.setOpaque(false);
+        panel.setBorder(new EmptyBorder(0, 0, 12, 0));
 
         JLabel titleLabel = new JLabel("Manage Reports & Rankings");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setForeground(new Color(33, 150, 243));
-        panel.add(titleLabel, BorderLayout.WEST);
+        titleLabel.setFont(titleFont);
+        titleLabel.setForeground(textPrimary);
+        JLabel subtitleLabel = new JLabel("Generate reports by period, ranking range, or evaluation ID.");
+        subtitleLabel.setFont(subtitleFont);
+        subtitleLabel.setForeground(textMuted);
+        JPanel titleGroup = new JPanel(new GridLayout(2, 1, 0, 4));
+        titleGroup.setOpaque(false);
+        titleGroup.add(titleLabel);
+        titleGroup.add(subtitleLabel);
+        panel.add(titleGroup, BorderLayout.WEST);
 
         return panel;
     }
@@ -86,9 +107,10 @@ public class ManageReportsPanel extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createCompoundBorder(
-                new TitledBorder("Report Controls"),
-                new EmptyBorder(10, 10, 10, 10)
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                new EmptyBorder(12, 12, 12, 12)
         ));
+        panel.setBackground(cardBg);
 
         // Period Selection
         panel.add(createSectionPanel("Select Period", createPeriodPanel()));
@@ -115,12 +137,14 @@ public class ManageReportsPanel extends JPanel {
     private JPanel createSectionPanel(String title, JPanel content) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
-                new EmptyBorder(5, 5, 5, 5)
+                BorderFactory.createLineBorder(borderColor),
+                new EmptyBorder(10, 10, 10, 10)
         ));
+        panel.setBackground(cardBg);
 
         JLabel label = new JLabel(title);
-        label.setFont(new Font("Arial", Font.BOLD, 12));
+        label.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        label.setForeground(textPrimary);
         panel.add(label, BorderLayout.NORTH);
         panel.add(content, BorderLayout.CENTER);
 
@@ -129,25 +153,37 @@ public class ManageReportsPanel extends JPanel {
 
     private JPanel createPeriodPanel() {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.setBackground(cardBg);
         periodComboBox = new JComboBox<>();
+        periodComboBox.setFont(labelFont);
         periodComboBox.addActionListener(e -> refreshDisplayTable());
-        panel.add(new JLabel("Period:"), BorderLayout.WEST);
+        JLabel label = new JLabel("Period:");
+        label.setFont(labelFont);
+        label.setForeground(textPrimary);
+        panel.add(label, BorderLayout.WEST);
         panel.add(periodComboBox, BorderLayout.CENTER);
         return panel;
     }
 
     private JPanel createTopNPanel() {
         JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+        panel.setBackground(cardBg);
 
-        panel.add(new JLabel("Top N:"));
+        JLabel label = new JLabel("Top N:");
+        label.setFont(labelFont);
+        label.setForeground(textPrimary);
+        panel.add(label);
         topNSpinner = new JSpinner(new SpinnerNumberModel(10, 1, 100, 5));
+        topNSpinner.setFont(labelFont);
         panel.add(topNSpinner);
 
         JButton viewButton = new JButton("View Rankings");
+        styleButton(viewButton);
         viewButton.addActionListener(e -> viewTopNRankings());
         panel.add(viewButton);
 
         JButton exportButton = new JButton("Export to Excel");
+        styleButton(exportButton);
         exportButton.addActionListener(e -> exportTopNReport());
         panel.add(exportButton);
 
@@ -156,13 +192,16 @@ public class ManageReportsPanel extends JPanel {
 
     private JPanel createRangePanel() {
         JPanel panel = new JPanel(new GridLayout(2, 1, 5, 5));
+        panel.setBackground(cardBg);
 
         rankingRangeComboBox = new JComboBox<>(new String[]{
                 "Top 1-10", "Top 11-20", "Top 21-30", "Top 31-40", "Top 41-50"
         });
+        rankingRangeComboBox.setFont(labelFont);
         panel.add(rankingRangeComboBox);
 
         JButton viewRangeButton = new JButton("View Range");
+        styleButton(viewRangeButton);
         viewRangeButton.addActionListener(e -> viewRangeRankings());
         panel.add(viewRangeButton);
 
@@ -171,18 +210,26 @@ public class ManageReportsPanel extends JPanel {
 
     private JPanel createIndividualPanel() {
         JPanel panel = new JPanel(new GridLayout(3, 1, 5, 5));
+        panel.setBackground(cardBg);
 
         JPanel inputPanel = new JPanel(new BorderLayout(5, 5));
-        inputPanel.add(new JLabel("Evaluation ID:"), BorderLayout.WEST);
+        inputPanel.setBackground(cardBg);
+        JLabel label = new JLabel("Evaluation ID:");
+        label.setFont(labelFont);
+        label.setForeground(textPrimary);
+        inputPanel.add(label, BorderLayout.WEST);
         evaluationIdField = new JTextField();
+        evaluationIdField.setFont(labelFont);
         inputPanel.add(evaluationIdField, BorderLayout.CENTER);
         panel.add(inputPanel);
 
         JButton viewEvalButton = new JButton("View Evaluation");
+        styleButton(viewEvalButton);
         viewEvalButton.addActionListener(e -> viewIndividualEvaluation());
         panel.add(viewEvalButton);
 
         JButton exportEvalButton = new JButton("Export Form");
+        styleButton(exportEvalButton);
         exportEvalButton.addActionListener(e -> exportEvaluationForm());
         panel.add(exportEvalButton);
 
@@ -203,7 +250,11 @@ public class ManageReportsPanel extends JPanel {
 
     private JPanel createDisplayPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(new TitledBorder("Report Preview"));
+        panel.setBackground(cardBg);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1, true),
+                BorderFactory.createEmptyBorder(12, 12, 12, 12)
+        ));
 
         // Table
         String[] columns = {"Rank", "Staff ID", "Name", "Position", "Department",
@@ -218,6 +269,9 @@ public class ManageReportsPanel extends JPanel {
         reportTable = new JTable(tableModel);
         reportTable.setAutoCreateRowSorter(true);
         reportTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        reportTable.setRowHeight(32);
+        reportTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        reportTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
 
         // Customize column widths
         reportTable.getColumnModel().getColumn(0).setPreferredWidth(50);
@@ -226,11 +280,17 @@ public class ManageReportsPanel extends JPanel {
         reportTable.getColumnModel().getColumn(6).setPreferredWidth(80);
 
         JScrollPane scrollPane = new JScrollPane(reportTable);
+        JLabel title = new JLabel("Report Preview");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        title.setForeground(textPrimary);
+        panel.add(title, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
 
         // Refresh button
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(cardBg);
         JButton refreshButton = new JButton("Refresh");
+        styleButton(refreshButton);
         refreshButton.addActionListener(e -> refreshDisplayTable());
         buttonPanel.add(refreshButton);
         panel.add(buttonPanel, BorderLayout.SOUTH);
@@ -240,14 +300,27 @@ public class ManageReportsPanel extends JPanel {
 
     private JPanel createStatusPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(new EmptyBorder(10, 0, 0, 0));
+        panel.setOpaque(false);
+        panel.setBorder(new EmptyBorder(12, 0, 0, 0));
 
         statusLabel = new JLabel("Ready");
-        statusLabel.setFont(new Font("Arial", Font.PLAIN, 11));
-        statusLabel.setForeground(Color.GRAY);
+        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        statusLabel.setForeground(textMuted);
         panel.add(statusLabel, BorderLayout.WEST);
 
         return panel;
+    }
+
+    private void styleButton(JButton button) {
+        button.setFont(buttonFont);
+        button.setBackground(new Color(229, 233, 238));
+        button.setForeground(textPrimary);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 204, 210), 1, true),
+                BorderFactory.createEmptyBorder(8, 16, 8, 16)
+        ));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     // Data Loading Methods
